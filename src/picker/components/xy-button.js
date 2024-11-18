@@ -1,12 +1,13 @@
-
+// eslint-disable-next-line max-classes-per-file
 export default class XyButton extends HTMLElement {
-    //https://mladenplavsic.github.io/css-ripple-effect
-    static get observedAttributes() { return ['disabled','icon','loading','href','htmltype'] }
+  static get observedAttributes() {
+    return ['disabled', 'icon', 'loading', 'href', 'htmltype'];
+  }
 
-    constructor() {
-        super();
-        const shadowRoot = this.attachShadow({ mode: 'open' });
-        shadowRoot.innerHTML = `
+  constructor() {
+    super();
+    const shadowRoot = this.attachShadow({ mode: 'open' });
+    shadowRoot.innerHTML = `
         <style>
         :host{ 
             position:relative; 
@@ -173,173 +174,175 @@ export default class XyButton extends HTMLElement {
             cursor:pointer;
         }
         </style>
-        <${this.href?'a':'button'} ${this.htmltype?'type="'+this.htmltype+'"':''} ${(this.download&&this.href)?'download="'+this.download+'"':''} ${this.href?'href="'+this.href+'" target="'+this.target+'" rel="'+this.rel+'"':''} class="btn" id="btn"></${this.href?'a':'button'}>${!this.loading && this.icon && this.icon!='null'?'<xy-icon id="icon" name='+this.icon+'></xy-icon>':''}<slot></slot>
-        `
-    }
+        <${this.href ? 'a' : 'button'} ${this.htmltype ? `type="${this.htmltype}"` : ''} ${(this.download && this.href) ? `download="${this.download}"` : ''} ${this.href ? `href="${this.href}" target="${this.target}" rel="${this.rel}"` : ''} class="btn" id="btn"></${this.href ? 'a' : 'button'}>${!this.loading && this.icon && this.icon !== 'null' ? `<xy-icon id="icon" name=${this.icon}></xy-icon>` : ''}<slot></slot>
+        `;
+  }
 
-    focus() {
-        this.btn.focus();
-    }
+  focus() {
+    this.btn.focus();
+  }
 
-    get disabled() {
-        return this.getAttribute('disabled')!==null;
-    }
+  get disabled() {
+    return this.getAttribute('disabled') !== null;
+  }
 
-    get toggle() {
-        return this.getAttribute('toggle')!==null;
-    }
+  get toggle() {
+    return this.getAttribute('toggle') !== null;
+  }
 
-    get htmltype() {
-        return this.getAttribute('htmltype');
-    }
+  get htmltype() {
+    return this.getAttribute('htmltype');
+  }
 
-    get name() {
-        return this.getAttribute('name');
-    }
+  get name() {
+    return this.getAttribute('name');
+  }
 
-    get checked() {
-        return this.getAttribute('checked')!==null;
-    }
+  get checked() {
+    return this.getAttribute('checked') !== null;
+  }
 
-    get href() {
-        return this.getAttribute('href');
-    }
+  get href() {
+    return this.getAttribute('href');
+  }
 
-    get target() {
-        return this.getAttribute('target')||'_blank';
-    }
+  get target() {
+    return this.getAttribute('target') || '_blank';
+  }
 
-    get rel() {
-        return this.getAttribute('rel');
-    }
+  get rel() {
+    return this.getAttribute('rel');
+  }
 
-    get download() {
-        return this.getAttribute('download');
-    }
+  get download() {
+    return this.getAttribute('download');
+  }
 
-    get icon() {
-        return this.getAttribute('icon');
-    }
+  get icon() {
+    return this.getAttribute('icon');
+  }
 
-    get loading() {
-        return this.getAttribute('loading')!==null;
-    }
+  get loading() {
+    return this.getAttribute('loading') !== null;
+  }
 
-    set icon(value) {
-        this.setAttribute('icon', value);
-    }
+  set icon(value) {
+    this.setAttribute('icon', value);
+  }
 
-    set htmltype(value) {
-        this.setAttribute('htmltype', value);
-    }
+  set htmltype(value) {
+    this.setAttribute('htmltype', value);
+  }
 
-    set href(value) {
-        this.setAttribute('href', value);
-    }
+  set href(value) {
+    this.setAttribute('href', value);
+  }
 
-    set disabled(value) {
-        if(value===null||value===false){
-            this.removeAttribute('disabled');
-        }else{
-            this.setAttribute('disabled', '');
+  set disabled(value) {
+    if (value === null || value === false) {
+      this.removeAttribute('disabled');
+    } else {
+      this.setAttribute('disabled', '');
+    }
+  }
+
+  set checked(value) {
+    if (value === null || value === false) {
+      this.removeAttribute('checked');
+    } else {
+      this.setAttribute('checked', '');
+    }
+  }
+
+  set loading(value) {
+    if (value === null || value === false) {
+      this.removeAttribute('loading');
+    } else {
+      this.setAttribute('loading', '');
+    }
+  }
+
+  connectedCallback() {
+    this.btn = this.shadowRoot.getElementById('btn');
+    this.ico = this.shadowRoot.getElementById('icon');
+    this.load = document.createElement('xy-loading');
+    this.load.style.color = 'inherit';
+    this.btn.addEventListener('mousedown', (ev) => {
+      if (!this.disabled) {
+        const {
+          left,
+          top,
+        } = this.getBoundingClientRect();
+        this.style.setProperty('--x', `${ev.clientX - left}px`);
+        this.style.setProperty('--y', `${ev.clientY - top}px`);
+      }
+    });
+    this.addEventListener('click', () => {
+      if (this.toggle) {
+        this.checked = !this.checked;
+      }
+    });
+    this.btn.addEventListener('keydown', (ev) => {
+      switch (ev.keyCode) {
+        case 13:
+          ev.stopPropagation();
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'disabled' && this.btn) {
+      if (newValue !== null) {
+        this.btn.setAttribute('disabled', 'disabled');
+        if (this.href) {
+          this.btn.removeAttribute('href');
         }
+      } else {
+        this.btn.removeAttribute('disabled');
+        if (this.href) {
+          this.btn.href = this.href;
+        }
+      }
     }
-
-    set checked(value) {
-        if(value===null||value===false){
-            this.removeAttribute('checked');
-        }else{
-            this.setAttribute('checked', '');
-        }
+    if (name === 'loading' && this.btn) {
+      if (newValue !== null) {
+        this.shadowRoot.prepend(this.load);
+        this.btn.setAttribute('disabled', 'disabled');
+      } else {
+        this.shadowRoot.removeChild(this.load);
+        this.btn.removeAttribute('disabled');
+      }
     }
-
-    set loading(value) {
-        if (value===null||value===false) {
-            this.removeAttribute('loading');
-        } else {
-            this.setAttribute('loading', '');
-        }
+    if (name === 'icon' && this.ico) {
+      this.ico.name = newValue;
     }
-
-    connectedCallback() {
-        this.btn = this.shadowRoot.getElementById('btn');
-        this.ico = this.shadowRoot.getElementById('icon');
-        this.load = document.createElement('xy-loading');
-        this.load.style.color = 'inherit';
-        this.btn.addEventListener('mousedown',function(ev){
-            //ev.preventDefault();
-            //ev.stopPropagation();
-            if(!this.disabled){
-                const { left, top } = this.getBoundingClientRect();
-                this.style.setProperty('--x',(ev.clientX - left)+'px');
-                this.style.setProperty('--y',(ev.clientY - top)+'px');
-            }
-        })
-        this.addEventListener('click',function(ev){
-            if (this.toggle) {
-                this.checked=!this.checked;
-            }
-        })
-        this.btn.addEventListener('keydown', (ev) => {
-            switch (ev.keyCode) {
-                case 13://Enter
-                    ev.stopPropagation();
-                    break;
-                default:
-                    break;
-            }
-        })
-        this.disabled = this.disabled;
-        this.loading = this.loading;
+    if (name === 'href' && this.btn) {
+      if (!this.disabled) {
+        this.btn.href = newValue;
+      }
     }
-
-    attributeChangedCallback (name, oldValue, newValue) {
-        if (name == 'disabled' && this.btn) {
-            if (newValue !== null) {
-                this.btn.setAttribute('disabled', 'disabled');
-                if (this.href) {
-                    this.btn.removeAttribute('href');
-                }
-            }else{
-                this.btn.removeAttribute('disabled');
-                if (this.href) {
-                    this.btn.href = this.href;
-                }
-            }
-        }
-        if (name == 'loading' && this.btn) {
-            if (newValue!==null) {
-                this.shadowRoot.prepend(this.load);
-                this.btn.setAttribute('disabled', 'disabled');
-            } else {
-                this.shadowRoot.removeChild(this.load);
-                this.btn.removeAttribute('disabled');
-            }
-        }
-        if (name == 'icon' && this.ico) {
-            this.ico.name = newValue;
-        }
-        if (name == 'href' && this.btn) {
-            if(!this.disabled){
-                this.btn.href = newValue;
-            }
-        }
-        if (name == 'htmltype' && this.btn) {
-            this.btn.type = newValue;
-        }
+    if (name === 'htmltype' && this.btn) {
+      this.btn.type = newValue;
     }
+  }
 }
 
-if(!customElements.get('xy-button')){
-    customElements.define('xy-button', XyButton);
+if (!customElements.get('xy-button')) {
+  customElements.define('xy-button', XyButton);
 }
 
 class XyButtonGroup extends HTMLElement {
-    static get observedAttributes() { return ['disabled'] }
-    constructor() {
-        super();
-        const shadowRoot = this.attachShadow({ mode: 'open' });
-        shadowRoot.innerHTML = `
+  static get observedAttributes() {
+    return ['disabled'];
+  }
+
+  constructor() {
+    super();
+    const shadowRoot = this.attachShadow({ mode: 'open' });
+    shadowRoot.innerHTML = `
         <style>
         :host {
             display:inline-flex;
@@ -366,31 +369,22 @@ class XyButtonGroup extends HTMLElement {
         }
         </style>
         <slot></slot>
-        `
+        `;
+  }
+
+  get disabled() {
+    return this.getAttribute('disabled') !== null;
+  }
+
+  set disabled(value) {
+    if (value === null || value === false) {
+      this.removeAttribute('disabled');
+    } else {
+      this.setAttribute('disabled', '');
     }
-
-
-    get disabled() {
-        return this.getAttribute('disabled')!==null;
-    }
-
-    set disabled(value) {
-        if(value===null||value===false){
-            this.removeAttribute('disabled');
-        }else{
-            this.setAttribute('disabled', '');
-        }
-    }
-
-    connectedCallback() {
-
-    }
-
-    attributeChangedCallback (name, oldValue, newValue) {
-
-    }
+  }
 }
 
-if(!customElements.get('xy-button-group')){
-    customElements.define('xy-button-group', XyButtonGroup);
+if (!customElements.get('xy-button-group')) {
+  customElements.define('xy-button-group', XyButtonGroup);
 }

@@ -15,8 +15,8 @@
 }
 
 .colorPlugin.ce-inline-tool {
-  width: 32px;
-  border-radius: 3px;
+  width: 38px;
+  border-radius: 4px;
 }
 
 .colorPlugin.ce-inline-tool--active svg {
@@ -24,16 +24,17 @@
 }
 
 #color-left-btn {
-  height: 35px;
-  width: 18px;
-  font-weight: 600;
   display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
   align-items: center;
+  width: 24px;
+  height: 100%;
 }
 
 #color-left-btn:hover {
-  border-radius: 5px 0 0 5px;
-  background: rgba(203, 203, 203, 0.49);
+  border-radius: 4px 0 0 4px;
+  background: rgba(203, 203, 203, 0.2);
 }
 
 #color-text {
@@ -44,3 +45,10 @@
   height: 15px;
 }
 
+.ce-popover__container {
+  overflow: visible;
+}
+
+.ce-popover--inline .ce-popover__items {
+   overflow: hidden;
+}

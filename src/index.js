@@ -10,7 +10,6 @@ require('./index.css').toString();
  * Text Color Tool for Editor.js
  */
 class Color {
-
   /**
    * @param {{api: object}}  - Editor.js API
    */
@@ -19,11 +18,9 @@ class Color {
     this.config = config;
     this.clickedOnLeft = false;
     this.pluginType = this.config.type || 'text';
-    this.parentTag = this.pluginType === 'marker' ? 'MARK' : 'FONT';
+    this.parentTag = this.pluginType === 'marker' ? 'MARK' : 'SPAN';
     this.hasCustomPicker = this.config.customPicker || false;
-    this.color = handleCSSVariables(
-        getDefaultColorCache(this.config.defaultColor, this.pluginType)
-    );
+    this.color = handleCSSVariables(getDefaultColorCache(this.config.defaultColor, this.pluginType));
     this.picker = null;
     this.icon = null;
 
@@ -78,7 +75,9 @@ class Color {
       this.icon = document.createElement('div');
       this.icon.id = 'color-left-btn';
       this.icon.appendChild(this.createButtonIcon());
-      this.icon.addEventListener('click', () => this.clickedOnLeft = true);
+      this.icon.addEventListener('click', () => {
+        this.clickedOnLeft = true;
+      });
     }
 
     return this.icon;
@@ -105,13 +104,19 @@ class Color {
   createRightButton(sharedScope) {
     if (!this.picker) {
       this.picker = new Picker.ColorPlugin({
-        onColorPicked: function (value) {
+        onColorPicked: (value) => {
+          // eslint-disable-next-line no-param-reassign
           sharedScope.color = value;
+          const sel = document.getSelection();
+          if (sel) {
+            const range = sel.getRangeAt(0);
+            this.wrap(range);
+          }
         },
         hasCustomPicker: this.hasCustomPicker,
         defaultColor: this.config.defaultColor,
         colorCollections: this.config.colorCollections,
-        type: this.pluginType
+        type: this.pluginType,
       });
     }
 
@@ -125,13 +130,13 @@ class Color {
    */
   surround(range) {
     if (!range) {
-      return
+      return;
     }
 
     /**
      * clean legacy wrapper generated before editorjs-text-color-plugin v3.0
      */
-    const legacySpanWrapper = this.api.selection.findParentTag("SPAN");
+    const legacySpanWrapper = this.api.selection.findParentTag('SPAN');
     if (legacySpanWrapper) this.unwrap(legacySpanWrapper);
 
     /**
@@ -149,11 +154,46 @@ class Color {
   }
 
   /**
+   *
+   * @param {Range} range;
+   */
+  unwrapTagInRange(range, tag) {
+    // eslint-disable-next-line no-param-reassign
+    tag = tag.toUpperCase();
+    const { startContainer } = range;
+    const { endContainer } = range;
+
+    if (startContainer.nodeType === Node.TEXT_NODE && startContainer.parentNode.tagName === tag) {
+      range.setStartBefore(startContainer.parentNode);
+    }
+    if (endContainer.nodeType === Node.TEXT_NODE && endContainer.parentNode.tagName === tag) {
+      range.setEndAfter(endContainer.parentNode);
+    }
+
+    const contents = range.extractContents();
+    const children = contents.querySelectorAll(tag);
+
+    const unwrap = (node) => {
+      while (node.firstChild) {
+        node.parentNode.insertBefore(node.firstChild, node);
+      }
+      node.parentNode.removeChild(node);
+    };
+
+    children.forEach((child) => unwrap(child));
+
+    range.deleteContents();
+    range.insertNode(contents);
+  }
+
+  /**
    * Wrap selected fragment
    *
    * @param {Range} range - selected fragment
    */
   wrap(range) {
+    this.unwrapTagInRange(range, this.parentTag);
+
     const selectedText = range.extractContents();
     const newWrapper = document.createElement(this.parentTag);
 
@@ -175,9 +215,13 @@ class Color {
    * @param newWrapper - wrapper for selected fragment
    */
   wrapMarker(newWrapper) {
+    // eslint-disable-next-line no-param-reassign
     newWrapper.style.backgroundColor = this.color;
-    const colorWrapper = this.api.selection.findParentTag('FONT');
-    if (colorWrapper) newWrapper.style.color = colorWrapper.style.color;
+    const colorWrapper = this.api.selection.findParentTag('SPAN');
+    if (colorWrapper) {
+      // eslint-disable-next-line no-param-reassign
+      newWrapper.style.color = colorWrapper.style.color;
+    }
   }
 
   /**
@@ -186,6 +230,7 @@ class Color {
    * @param {Range} newWrapper - wrapper for selected fragment
    */
   wrapTextColor(newWrapper) {
+    // eslint-disable-next-line no-param-reassign
     newWrapper.style.color = this.color;
   }
 
@@ -198,12 +243,12 @@ class Color {
     /**
      * Expand selection to all term-tag
      */
-    this.api.selection.expandToTag(termWrapper)
+    this.api.selection.expandToTag(termWrapper);
 
-    const sel = window.getSelection()
-    const range = sel.getRangeAt(0)
+    const sel = window.getSelection();
+    const range = sel.getRangeAt(0);
 
-    const unwrappedContent = range.extractContents()
+    const unwrappedContent = range.extractContents();
 
     /**
      * Remove empty term-tag
@@ -217,13 +262,13 @@ class Color {
     /**
      * Insert extracted content
      */
-    range.insertNode(unwrappedContent)
+    range.insertNode(unwrappedContent);
 
     /**
      * Restore selection
      */
-    sel.removeAllRanges()
-    sel.addRange(range)
+    sel.removeAllRanges();
+    sel.addRange(range);
   }
 
   /**
@@ -233,8 +278,10 @@ class Color {
    */
   updateWrapper(termWrapper) {
     if (this.pluginType === 'marker') {
+      // eslint-disable-next-line no-param-reassign
       termWrapper.style.backgroundColor = this.color;
     } else {
+      // eslint-disable-next-line no-param-reassign
       termWrapper.style.color = this.color;
     }
   }
@@ -252,10 +299,10 @@ class Color {
    * Check and change Term's state for current selection
    */
   checkState() {
-    const legacyWrapper = this.api.selection.findParentTag("SPAN");
+    const legacyWrapper = this.api.selection.findParentTag('SPAN');
     const termTag = this.api.selection.findParentTag(this.parentTag);
-    let isWrapped = legacyWrapper ? this.handleLegacyWrapper(legacyWrapper, termTag) : termTag;
-    this.button.classList.toggle(this.iconClasses.active, !!isWrapped)
+    const isWrapped = legacyWrapper ? this.handleLegacyWrapper(legacyWrapper, termTag) : termTag;
+    this.button.classList.toggle(this.iconClasses.active, !!isWrapped);
 
     return !!isWrapped;
   }
@@ -264,6 +311,7 @@ class Color {
    * handle icon active state for legacy wrappers
    */
   handleLegacyWrapper(legacyWrapper, termTag) {
+    // eslint-disable-next-line no-bitwise
     return this.pluginType === 'marker' ? legacyWrapper : (termTag & legacyWrapper);
   }
 
@@ -275,7 +323,7 @@ class Color {
     return {
       font: true,
       span: true,
-      mark: true
+      mark: true,
     };
   }
 

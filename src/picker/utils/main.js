@@ -6,40 +6,43 @@ const TEXT_COLOR_CACHE = 'editor-js-text-color-cache';
  * @returns string color string
  */
 export function handleCSSVariables(colorValue) {
-    if (isColorVariable(colorValue)) {
-        const variableName = extractVariableName(colorValue);
-        return getCSSPropertyValue(variableName);
-    }
-    return colorValue;
+  if (isColorVariable(colorValue)) {
+    const variableName = extractVariableName(colorValue);
+    return getCSSPropertyValue(variableName);
+  }
+  return colorValue;
 }
 
 function extractVariableName(colorValue) {
-    const regexResult = /\((.*?)\)/.exec(colorValue);
-    if (regexResult) return regexResult[1];
+  const regexResult = /\((.*?)\)/.exec(colorValue);
+  if (regexResult) return regexResult[1];
+
+  return null;
 }
 
 function getCSSPropertyValue(variableName) {
-    return window.getComputedStyle(document.documentElement).getPropertyValue(variableName);
+  return window.getComputedStyle(document.documentElement)
+    .getPropertyValue(variableName);
 }
 
 function isColorVariable(colorValue) {
-    return isString(colorValue) && colorValue.includes('--');
+  return isString(colorValue) && colorValue.includes('--');
 }
 
 function isString(stringInput) {
-    return typeof stringInput === 'string' || stringInput instanceof String;
+  return typeof stringInput === 'string' || stringInput instanceof String;
 }
 
 export function throttle(fn, delay) {
-    let id;
-    return (...args) => {
-        if (!id) {
-            id = setTimeout(() => {
-                fn(...args);
-                id = null;
-            }, delay)
-        }
+  let id;
+  return (...args) => {
+    if (!id) {
+      id = setTimeout(() => {
+        fn(...args);
+        id = null;
+      }, delay);
     }
+  };
 }
 
 /**
@@ -49,8 +52,8 @@ export function throttle(fn, delay) {
  * @returns defaultColor
  */
 export function setDefaultColorCache(defaultColor, pluginType) {
-    sessionStorage.setItem(`${TEXT_COLOR_CACHE}-${pluginType}`, JSON.stringify(defaultColor));
-    return defaultColor;
+  sessionStorage.setItem(`${TEXT_COLOR_CACHE}-${pluginType}`, JSON.stringify(defaultColor));
+  return defaultColor;
 }
 
 /**
@@ -60,8 +63,8 @@ export function setDefaultColorCache(defaultColor, pluginType) {
  * @returns string cachedDefaultColor/defaultColor
  */
 export function getDefaultColorCache(defaultColor, pluginType) {
-    const cachedDefaultColor = sessionStorage.getItem(`${TEXT_COLOR_CACHE}-${pluginType}`);
-    return cachedDefaultColor ? JSON.parse(cachedDefaultColor) : defaultColor;
+  const cachedDefaultColor = sessionStorage.getItem(`${TEXT_COLOR_CACHE}-${pluginType}`);
+  return cachedDefaultColor ? JSON.parse(cachedDefaultColor) : defaultColor;
 }
 
 /**
@@ -70,7 +73,7 @@ export function getDefaultColorCache(defaultColor, pluginType) {
  * @param pluginType
  */
 export function setCustomColorCache(customColor, pluginType) {
-    sessionStorage.setItem(`${TEXT_COLOR_CACHE}-${pluginType}-custom`, JSON.stringify(customColor));
+  sessionStorage.setItem(`${TEXT_COLOR_CACHE}-${pluginType}-custom`, JSON.stringify(customColor));
 }
 
 /**
@@ -79,8 +82,8 @@ export function setCustomColorCache(customColor, pluginType) {
  * @returns string cachedCustomColor
  */
 export function getCustomColorCache(pluginType) {
-    const cachedCustomColor = sessionStorage.getItem(`${TEXT_COLOR_CACHE}-${pluginType}-custom`);
-    return cachedCustomColor ? JSON.parse(cachedCustomColor) : null;
+  const cachedCustomColor = sessionStorage.getItem(`${TEXT_COLOR_CACHE}-${pluginType}-custom`);
+  return cachedCustomColor ? JSON.parse(cachedCustomColor) : null;
 }
 
 export const CONVERTER_BTN = 'ce-inline-toolbar__dropdown';
